@@ -10,6 +10,8 @@ import android.util.TypedValue;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.laudandjolynn.mytv.android.R;
+import com.laudandjolynn.mytv.service.DataService;
+import com.laudandjolynn.mytv.service.HessianImpl;
 
 public class MainActivity extends FragmentActivity {
 	private String date;
@@ -19,7 +21,8 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		String[] titles = null;
+		DataService dataService = new HessianImpl();
+		String[] titles = dataService.getTvStationClassify();
 		PagerSlidingTabStrip tabs = (PagerSlidingTabStrip) findViewById(R.id.nav_tabs);
 		ViewPager pager = (ViewPager) findViewById(R.id.pager);
 		MyPagerAdapter adapter = new MyPagerAdapter(titles,
