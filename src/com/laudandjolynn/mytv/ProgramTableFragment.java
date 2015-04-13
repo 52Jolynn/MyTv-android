@@ -170,7 +170,7 @@ public class ProgramTableFragment extends Fragment implements
 		};
 		List<ProgramTable> ptList = null;
 		try {
-			ptList = task.execute().get();
+			ptList = task.executeOnExecutor(executorService).get();
 		} catch (Exception e) {
 			Toast.makeText(
 					getActivity(),
