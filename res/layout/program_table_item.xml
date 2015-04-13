@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:id="@+id/program_table_item_tvProgram"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/program_table_item_content_margin"
+        android:layout_marginTop="@dimen/program_table_item_content_margin"
+        android:gravity="center"
+        android:textSize="@dimen/programe_table_item_program_text_size" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/program_table_item_tvAirTime"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/program_table_item_air_time_margin_left"
+        android:layout_marginTop="@dimen/program_table_item_content_margin"
+        android:layout_toRightOf="@id/program_table_item_tvProgram"
+        android:gravity="center"
+        android:textSize="@dimen/programe_table_item_air_time_text_size" >
+    </TextView>
+
+</RelativeLayout>

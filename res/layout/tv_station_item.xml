@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:id="@+id/tv_station_item_tvStationName"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/tv_station_item_station_name_margin"
+        android:layout_marginTop="@dimen/tv_station_item_station_name_margin"
+        android:gravity="center"
+        android:textSize="@dimen/tv_station_item_station_name_text_size" />
+
+</FrameLayout>

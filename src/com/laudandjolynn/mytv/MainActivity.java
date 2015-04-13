@@ -14,9 +14,10 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.laudandjolynn.mytv.android.R;
 import com.laudandjolynn.mytv.service.DataService;
 import com.laudandjolynn.mytv.service.HessianImpl;
+import com.laudandjolynn.mytv.utils.DateUtils;
 
 public class MainActivity extends FragmentActivity {
-	private String date;
+	private String date = DateUtils.today();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +39,7 @@ public class MainActivity extends FragmentActivity {
 			titles = task.execute().get();
 		} catch (Exception e) {
 			String msg = getResources().getText(
-					R.string.query_tv_stations_error).toString();
+					R.string.query_tv_station_classify_error).toString();
 			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 		}
 		PagerSlidingTabStrip tabs = (PagerSlidingTabStrip) findViewById(R.id.nav_tabs);
@@ -73,8 +74,8 @@ public class MainActivity extends FragmentActivity {
 
 		@Override
 		public Fragment getItem(int position) {
-			return ProgramTableFragment.newInstance(date,
-					getPageTitle(position).toString());
+			return ProgramTableFragment.newInstance(getPageTitle(position)
+					.toString(), date);
 		}
 
 	}
