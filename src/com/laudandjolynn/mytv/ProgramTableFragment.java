@@ -142,12 +142,13 @@ public class ProgramTableFragment extends Fragment implements
 							R.string.query_program_table_of_tv_station_error)
 							.toString(), Toast.LENGTH_SHORT).show();
 		}
+		tvApt.selectedItemPosition = position;
+		tvApt.notifyDataSetChanged();
 		pbDialog.dismiss();
 		ptApt.setNotifyOnChange(false);
 		ptApt.clear();
 		ptApt.setNotifyOnChange(true);
 		ptApt.addAll(ptList);
-		tvApt.selectedItemPosition = position;
 	}
 
 	/**
