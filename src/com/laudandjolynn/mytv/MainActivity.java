@@ -19,14 +19,14 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.laudandjolynn.mytv.android.R;
 import com.laudandjolynn.mytv.service.DataService;
 import com.laudandjolynn.mytv.service.HessianImpl;
+import com.laudandjolynn.mytv.utils.AppUtils;
 import com.laudandjolynn.mytv.utils.DateUtils;
 
 public class MainActivity extends FragmentActivity {
 	private String date = DateUtils.today();
-	public final static int SHOW_PROGRESS_DIALOG = 0;
-	public final static int DISMISS_PROGRESS_DIALOG = 1;
-	private ProgressDialog pbDialog = null;
 	private Handler handler = new MyHandler(this);
+	private ProgressDialog pbDialog = null;
+	private String[] classify = null;
 
 	private final static class MyHandler extends Handler {
 		private WeakReference<MainActivity> ctx = null;
@@ -39,10 +39,12 @@ public class MainActivity extends FragmentActivity {
 		public void handleMessage(Message msg) {
 			MainActivity activity = ctx.get();
 			if (activity != null) {
-				if (SHOW_PROGRESS_DIALOG == msg.what) {
-					activity.pbDialog.show();
-				} else if (DISMISS_PROGRESS_DIALOG == msg.what) {
+				if (AppUtils.DISMISS_PROGRESS_DIALOG == msg.what
+						&& activity.pbDialog != null
+						&& activity.pbDialog.isShowing()) {
 					activity.pbDialog.dismiss();
+				} else if (AppUtils.READY_TO_LOAD_DATA == msg.what) {
+					activity.loadData();
 				}
 			}
 		}
@@ -52,37 +54,42 @@ public class MainActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		pbDialog = new ProgressDialog(this);
-		pbDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		pbDialog.setCancelable(true);
-		pbDialog.setTitle(getResources().getText(
-				R.string.query_epg_data_progress_dialog_title).toString());
-		pbDialog.setMessage(getResources().getText(
-				R.string.query_epg_data_progress_dialog_content).toString());
+		pbDialog = AppUtils.buildEpgProgressDialog(this);
+		pbDialog.show();
+		// 获取数据
 		AsyncTask<Void, Void, String[]> task = new AsyncTask<Void, Void, String[]>() {
+
 			@Override
 			protected String[] doInBackground(Void... params) {
-				handler.sendEmptyMessage(SHOW_PROGRESS_DIALOG);
 				DataService dataService = new HessianImpl();
 				String[] titles = dataService.getTvStationClassify();
 				return titles;
 			}
+
+			@Override
+			protected void onPostExecute(String[] result) {
+				handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+				handler.sendEmptyMessage(AppUtils.READY_TO_LOAD_DATA);
+			}
 		};
 
-		String[] titles = new String[] { getResources().getText(
-				R.string.app_name).toString() };
+		classify = new String[] { getResources().getText(R.string.app_name)
+				.toString() };
 		try {
-			titles = task.execute().get();
+			classify = task.execute().get();
 		} catch (Exception e) {
 			String msg = getResources().getText(
 					R.string.query_tv_station_classify_error).toString();
 			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+			return;
 		}
-		handler.sendEmptyMessage(DISMISS_PROGRESS_DIALOG);
+
+	}
+
+	private void loadData() {
 		PagerSlidingTabStrip tabs = (PagerSlidingTabStrip) findViewById(R.id.nav_tabs);
 		ViewPager pager = (ViewPager) findViewById(R.id.pager);
-		MyPagerAdapter adapter = new MyPagerAdapter(titles,
+		MyPagerAdapter adapter = new MyPagerAdapter(classify,
 				getSupportFragmentManager());
 		pager.setAdapter(adapter);
 		final int pageMargin = (int) TypedValue.applyDimension(

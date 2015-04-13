@@ -1,6 +1,8 @@
 package com.laudandjolynn.mytv;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +29,7 @@ import com.laudandjolynn.mytv.model.ProgramTable;
 import com.laudandjolynn.mytv.model.TvStation;
 import com.laudandjolynn.mytv.service.DataService;
 import com.laudandjolynn.mytv.service.HessianImpl;
+import com.laudandjolynn.mytv.utils.AppUtils;
 import com.laudandjolynn.mytv.utils.Tuple;
 
 /**
@@ -50,6 +53,7 @@ public class ProgramTableFragment extends Fragment implements
 	private ProgramTableAdapter ptApt = null;
 	private ProgressDialog pbDialog = null;
 	private Handler handler = new MyHandler(this);
+	private ExecutorService executorService = null;
 
 	private final static class MyHandler extends Handler {
 		private ProgramTableFragment fragment = null;
@@ -60,9 +64,9 @@ public class ProgramTableFragment extends Fragment implements
 
 		@Override
 		public void handleMessage(Message msg) {
-			if (MainActivity.SHOW_PROGRESS_DIALOG == msg.what) {
-				fragment.pbDialog.show();
-			} else if (MainActivity.DISMISS_PROGRESS_DIALOG == msg.what) {
+			if (AppUtils.DISMISS_PROGRESS_DIALOG == msg.what
+					&& fragment.pbDialog != null
+					&& fragment.pbDialog.isShowing()) {
 				fragment.pbDialog.dismiss();
 			}
 		}
@@ -87,19 +91,16 @@ public class ProgramTableFragment extends Fragment implements
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		pbDialog = new ProgressDialog(getActivity());
-		pbDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		pbDialog.setCancelable(true);
-		pbDialog.setTitle(getResources().getText(
-				R.string.query_epg_data_progress_dialog_title).toString());
-		pbDialog.setMessage(getResources().getText(
-				R.string.query_epg_data_progress_dialog_content).toString());
+		View view = inflater.inflate(R.layout.fragment_program_table, null);
+		pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+		pbDialog.show();
+		executorService = Executors
+				.newFixedThreadPool(AppUtils.EPG_TASK_THREA_NUM);
 		// 获取电视台及节目数据
 		AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>> task = new AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>>() {
 			@Override
 			protected Tuple<List<TvStation>, List<ProgramTable>> doInBackground(
 					Void... params) {
-				handler.sendEmptyMessage(MainActivity.SHOW_PROGRESS_DIALOG);
 				List<TvStation> stationList = dataService
 						.getTvStationByClassify(classify);
 				Log.d(TAG, "station list: " + stationList.toString());
@@ -109,26 +110,32 @@ public class ProgramTableFragment extends Fragment implements
 				return new Tuple<List<TvStation>, List<ProgramTable>>(
 						stationList, ptList);
 			}
+
+			@Override
+			protected void onPostExecute(
+					Tuple<List<TvStation>, List<ProgramTable>> result) {
+				handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+			}
 		};
 		Tuple<List<TvStation>, List<ProgramTable>> result = null;
 		try {
-			result = task.execute().get();
+			result = task.executeOnExecutor(executorService).get();
 		} catch (Exception e) {
 			Toast.makeText(
 					getActivity(),
 					getResources().getText(
 							R.string.query_program_table_of_tv_station_error)
 							.toString(), Toast.LENGTH_SHORT).show();
+			return view;
 		}
-		handler.sendEmptyMessage(MainActivity.DISMISS_PROGRESS_DIALOG);
 		List<TvStation> stationList = result.left;
 		List<ProgramTable> ptList = result.right;
 
 		// 获取页面元素
-		View view = inflater.inflate(R.layout.fragment_program_table, null);
 		lvStation = (ListView) view
 				.findViewById(R.id.fragment_program_table_tvlist);
 		tvApt = new TvStationAdapter(getActivity(), stationList);
+		tvApt.selectedItemPosition = 0;
 		lvStation.setAdapter(tvApt);
 		lvStation.setOnItemClickListener(this);
 
@@ -136,20 +143,29 @@ public class ProgramTableFragment extends Fragment implements
 				.findViewById(R.id.fragment_program_table_programs);
 		ptApt = new ProgramTableAdapter(getActivity(), ptList);
 		lvProgramTable.setAdapter(ptApt);
-		lvStation.setItemChecked(0, true);
 		return view;
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		tvApt.selectedItemPosition = position;
+		tvApt.notifyDataSetChanged();
 		final TvStation station = (TvStation) parent
 				.getItemAtPosition(position);
+		pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+		pbDialog.show();
 		AsyncTask<Void, Void, List<ProgramTable>> task = new AsyncTask<Void, Void, List<ProgramTable>>() {
 			@Override
 			protected List<ProgramTable> doInBackground(Void... params) {
-				handler.sendEmptyMessage(MainActivity.SHOW_PROGRESS_DIALOG);
 				return dataService.getProgramTable(station.getName(), date);
+			}
+
+			@Override
+			protected void onPostExecute(List<ProgramTable> result) {
+				handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+				ptApt.setNotifyOnChange(true);
+				ptApt.notifyDataSetChanged();
 			}
 		};
 		List<ProgramTable> ptList = null;
@@ -161,14 +177,12 @@ public class ProgramTableFragment extends Fragment implements
 					getResources().getText(
 							R.string.query_program_table_of_tv_station_error)
 							.toString(), Toast.LENGTH_SHORT).show();
+			return;
 		}
-		tvApt.selectedItemPosition = position;
-		tvApt.notifyDataSetChanged();
 		ptApt.setNotifyOnChange(false);
 		ptApt.clear();
-		ptApt.setNotifyOnChange(true);
 		ptApt.addAll(ptList);
-		handler.sendEmptyMessage(MainActivity.DISMISS_PROGRESS_DIALOG);
+
 	}
 
 	/**
