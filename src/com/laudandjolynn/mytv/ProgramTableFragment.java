@@ -8,6 +8,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,6 +49,24 @@ public class ProgramTableFragment extends Fragment implements
 	private TvStationAdapter tvApt = null;
 	private ProgramTableAdapter ptApt = null;
 	private ProgressDialog pbDialog = null;
+	private Handler handler = new MyHandler(this);
+
+	private final static class MyHandler extends Handler {
+		private ProgramTableFragment fragment = null;
+
+		public MyHandler(ProgramTableFragment fragment) {
+			this.fragment = fragment;
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			if (MainActivity.SHOW_PROGRESS_DIALOG == msg.what) {
+				fragment.pbDialog.show();
+			} else if (MainActivity.DISMISS_PROGRESS_DIALOG == msg.what) {
+				fragment.pbDialog.dismiss();
+			}
+		}
+	}
 
 	public static ProgramTableFragment newInstance(String classify, String date) {
 		ProgramTableFragment f = new ProgramTableFragment();
@@ -67,11 +87,19 @@ public class ProgramTableFragment extends Fragment implements
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		pbDialog = new ProgressDialog(getActivity());
+		pbDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		pbDialog.setCancelable(true);
+		pbDialog.setTitle(getResources().getText(
+				R.string.query_epg_data_progress_dialog_title).toString());
+		pbDialog.setMessage(getResources().getText(
+				R.string.query_epg_data_progress_dialog_content).toString());
 		// 获取电视台及节目数据
 		AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>> task = new AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>>() {
 			@Override
 			protected Tuple<List<TvStation>, List<ProgramTable>> doInBackground(
 					Void... params) {
+				handler.sendEmptyMessage(MainActivity.SHOW_PROGRESS_DIALOG);
 				List<TvStation> stationList = dataService
 						.getTvStationByClassify(classify);
 				Log.d(TAG, "station list: " + stationList.toString());
@@ -83,14 +111,6 @@ public class ProgramTableFragment extends Fragment implements
 			}
 		};
 		Tuple<List<TvStation>, List<ProgramTable>> result = null;
-		pbDialog = new ProgressDialog(getActivity());
-		pbDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		pbDialog.setCancelable(true);
-		pbDialog.setTitle(getResources().getText(
-				R.string.query_epg_data_progress_dialog_title).toString());
-		pbDialog.setMessage(getResources().getText(
-				R.string.query_epg_data_progress_dialog_content).toString());
-		pbDialog.show();
 		try {
 			result = task.execute().get();
 		} catch (Exception e) {
@@ -100,7 +120,7 @@ public class ProgramTableFragment extends Fragment implements
 							R.string.query_program_table_of_tv_station_error)
 							.toString(), Toast.LENGTH_SHORT).show();
 		}
-		pbDialog.dismiss();
+		handler.sendEmptyMessage(MainActivity.DISMISS_PROGRESS_DIALOG);
 		List<TvStation> stationList = result.left;
 		List<ProgramTable> ptList = result.right;
 
@@ -128,12 +148,12 @@ public class ProgramTableFragment extends Fragment implements
 		AsyncTask<Void, Void, List<ProgramTable>> task = new AsyncTask<Void, Void, List<ProgramTable>>() {
 			@Override
 			protected List<ProgramTable> doInBackground(Void... params) {
+				handler.sendEmptyMessage(MainActivity.SHOW_PROGRESS_DIALOG);
 				return dataService.getProgramTable(station.getName(), date);
 			}
 		};
 		List<ProgramTable> ptList = null;
 		try {
-			pbDialog.show();
 			ptList = task.execute().get();
 		} catch (Exception e) {
 			Toast.makeText(
@@ -144,11 +164,11 @@ public class ProgramTableFragment extends Fragment implements
 		}
 		tvApt.selectedItemPosition = position;
 		tvApt.notifyDataSetChanged();
-		pbDialog.dismiss();
 		ptApt.setNotifyOnChange(false);
 		ptApt.clear();
 		ptApt.setNotifyOnChange(true);
 		ptApt.addAll(ptList);
+		handler.sendEmptyMessage(MainActivity.DISMISS_PROGRESS_DIALOG);
 	}
 
 	/**
