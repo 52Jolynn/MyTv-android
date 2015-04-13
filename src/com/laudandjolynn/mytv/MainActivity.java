@@ -13,7 +13,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
-import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.laudandjolynn.mytv.android.R;
@@ -43,8 +42,6 @@ public class MainActivity extends FragmentActivity {
 						&& activity.pbDialog != null
 						&& activity.pbDialog.isShowing()) {
 					activity.pbDialog.dismiss();
-				} else if (AppUtils.READY_TO_LOAD_DATA == msg.what) {
-					activity.loadData();
 				}
 			}
 		}
@@ -54,7 +51,9 @@ public class MainActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		pbDialog = AppUtils.buildEpgProgressDialog(this);
+		if (pbDialog == null) {
+			pbDialog = AppUtils.buildEpgProgressDialog(this);
+		}
 		pbDialog.show();
 		// 获取数据
 		AsyncTask<Void, Void, String[]> task = new AsyncTask<Void, Void, String[]>() {
@@ -69,21 +68,14 @@ public class MainActivity extends FragmentActivity {
 			@Override
 			protected void onPostExecute(String[] result) {
 				handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
-				handler.sendEmptyMessage(AppUtils.READY_TO_LOAD_DATA);
+				classify = result;
+				loadData();
 			}
 		};
 
 		classify = new String[] { getResources().getText(R.string.app_name)
 				.toString() };
-		try {
-			classify = task.execute().get();
-		} catch (Exception e) {
-			String msg = getResources().getText(
-					R.string.query_tv_station_classify_error).toString();
-			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-			return;
-		}
-
+		task.execute();
 	}
 
 	private void loadData() {

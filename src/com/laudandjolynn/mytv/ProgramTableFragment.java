@@ -1,8 +1,6 @@
 package com.laudandjolynn.mytv;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,7 +20,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.laudandjolynn.mytv.android.R;
 import com.laudandjolynn.mytv.model.ProgramTable;
@@ -53,7 +50,6 @@ public class ProgramTableFragment extends Fragment implements
 	private ProgramTableAdapter ptApt = null;
 	private ProgressDialog pbDialog = null;
 	private Handler handler = new MyHandler(this);
-	private ExecutorService executorService = null;
 
 	private final static class MyHandler extends Handler {
 		private ProgramTableFragment fragment = null;
@@ -91,11 +87,12 @@ public class ProgramTableFragment extends Fragment implements
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_program_table, null);
-		pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+		final View view = inflater.inflate(R.layout.fragment_program_table,
+				null);
+		if (pbDialog == null) {
+			pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+		}
 		pbDialog.show();
-		executorService = Executors
-				.newFixedThreadPool(AppUtils.EPG_TASK_THREA_NUM);
 		// 获取电视台及节目数据
 		AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>> task = new AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>>() {
 			@Override
@@ -115,34 +112,24 @@ public class ProgramTableFragment extends Fragment implements
 			protected void onPostExecute(
 					Tuple<List<TvStation>, List<ProgramTable>> result) {
 				handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+				List<TvStation> stationList = result.left;
+				List<ProgramTable> ptList = result.right;
+
+				// 获取页面元素
+				lvStation = (ListView) view
+						.findViewById(R.id.fragment_program_table_tvlist);
+				tvApt = new TvStationAdapter(getActivity(), stationList);
+				tvApt.selectedItemPosition = 0;
+				lvStation.setAdapter(tvApt);
+				lvStation.setOnItemClickListener(ProgramTableFragment.this);
+
+				ListView lvProgramTable = (ListView) view
+						.findViewById(R.id.fragment_program_table_programs);
+				ptApt = new ProgramTableAdapter(getActivity(), ptList);
+				lvProgramTable.setAdapter(ptApt);
 			}
 		};
-		Tuple<List<TvStation>, List<ProgramTable>> result = null;
-		try {
-			result = task.executeOnExecutor(executorService).get();
-		} catch (Exception e) {
-			Toast.makeText(
-					getActivity(),
-					getResources().getText(
-							R.string.query_program_table_of_tv_station_error)
-							.toString(), Toast.LENGTH_SHORT).show();
-			return view;
-		}
-		List<TvStation> stationList = result.left;
-		List<ProgramTable> ptList = result.right;
-
-		// 获取页面元素
-		lvStation = (ListView) view
-				.findViewById(R.id.fragment_program_table_tvlist);
-		tvApt = new TvStationAdapter(getActivity(), stationList);
-		tvApt.selectedItemPosition = 0;
-		lvStation.setAdapter(tvApt);
-		lvStation.setOnItemClickListener(this);
-
-		ListView lvProgramTable = (ListView) view
-				.findViewById(R.id.fragment_program_table_programs);
-		ptApt = new ProgramTableAdapter(getActivity(), ptList);
-		lvProgramTable.setAdapter(ptApt);
+		task.execute();
 		return view;
 	}
 
@@ -153,7 +140,9 @@ public class ProgramTableFragment extends Fragment implements
 		tvApt.notifyDataSetChanged();
 		final TvStation station = (TvStation) parent
 				.getItemAtPosition(position);
-		pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+		if (pbDialog == null) {
+			pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+		}
 		pbDialog.show();
 		AsyncTask<Void, Void, List<ProgramTable>> task = new AsyncTask<Void, Void, List<ProgramTable>>() {
 			@Override
@@ -164,25 +153,13 @@ public class ProgramTableFragment extends Fragment implements
 			@Override
 			protected void onPostExecute(List<ProgramTable> result) {
 				handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+				ptApt.setNotifyOnChange(false);
+				ptApt.clear();
 				ptApt.setNotifyOnChange(true);
-				ptApt.notifyDataSetChanged();
+				ptApt.addAll(result);
 			}
 		};
-		List<ProgramTable> ptList = null;
-		try {
-			ptList = task.executeOnExecutor(executorService).get();
-		} catch (Exception e) {
-			Toast.makeText(
-					getActivity(),
-					getResources().getText(
-							R.string.query_program_table_of_tv_station_error)
-							.toString(), Toast.LENGTH_SHORT).show();
-			return;
-		}
-		ptApt.setNotifyOnChange(false);
-		ptApt.clear();
-		ptApt.addAll(ptList);
-
+		task.execute();
 	}
 
 	/**
