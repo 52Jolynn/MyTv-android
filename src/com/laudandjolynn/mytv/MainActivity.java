@@ -1,5 +1,6 @@
 package com.laudandjolynn.mytv;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -7,6 +8,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
+import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.laudandjolynn.mytv.android.R;
@@ -21,8 +23,24 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		DataService dataService = new HessianImpl();
-		String[] titles = dataService.getTvStationClassify();
+		AsyncTask<Void, Void, String[]> task = new AsyncTask<Void, Void, String[]>() {
+			@Override
+			protected String[] doInBackground(Void... params) {
+				DataService dataService = new HessianImpl();
+				String[] titles = dataService.getTvStationClassify();
+				return titles;
+			}
+		};
+
+		String[] titles = new String[] { getResources().getText(
+				R.string.app_name).toString() };
+		try {
+			titles = task.execute().get();
+		} catch (Exception e) {
+			String msg = getResources().getText(
+					R.string.query_tv_stations_error).toString();
+			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+		}
 		PagerSlidingTabStrip tabs = (PagerSlidingTabStrip) findViewById(R.id.nav_tabs);
 		ViewPager pager = (ViewPager) findViewById(R.id.pager);
 		MyPagerAdapter adapter = new MyPagerAdapter(titles,

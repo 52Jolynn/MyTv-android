@@ -2,5 +2,6 @@
 <resources>
 
     <string name="app_name">我的电视台</string>
+    <string name="query_tv_stations_error">无法获取电视台信息</string>
 
 </resources>
