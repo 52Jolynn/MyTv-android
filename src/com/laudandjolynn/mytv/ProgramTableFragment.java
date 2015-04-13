@@ -1,6 +1,8 @@
 package com.laudandjolynn.mytv;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -10,6 +12,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,19 +32,22 @@ import com.laudandjolynn.mytv.utils.Tuple;
  * @date: 2015年4月10日 上午9:46:42
  * @copyright: 旦旦游广州工作室
  */
-public class ProgramTableFragment extends Fragment {
+public class ProgramTableFragment extends Fragment implements
+		OnItemClickListener {
 	private final static String TAG = ProgramTable.class.getName();
-	private static final String ARG_STATION_NAME = "stationName";
+	private static final String ARG_CLASSIFY = "classify";
 	private static final String ARG_AIR_DATE = "airDate";
-	private String stationName;
+	private String classify;
 	private String date;
 	private DataService dataService = new HessianImpl();
+	private final static Pattern PATTERN_DATE = Pattern
+			.compile("\\d+-\\d{2}-\\d{2}\\s+(\\d{2}:\\d{2}):\\d{2}");
+	private ProgramTableAdapter ptApt = null;
 
-	public static ProgramTableFragment newInstance(String stationName,
-			String date) {
+	public static ProgramTableFragment newInstance(String classify, String date) {
 		ProgramTableFragment f = new ProgramTableFragment();
 		Bundle b = new Bundle();
-		b.putString(ARG_STATION_NAME, stationName);
+		b.putString(ARG_CLASSIFY, classify);
 		b.putString(ARG_AIR_DATE, date);
 		f.setArguments(b);
 		return f;
@@ -49,7 +56,7 @@ public class ProgramTableFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this.stationName = getArguments().getString(ARG_STATION_NAME);
+		this.classify = getArguments().getString(ARG_CLASSIFY);
 		this.date = getArguments().getString(ARG_AIR_DATE);
 	}
 
@@ -61,12 +68,12 @@ public class ProgramTableFragment extends Fragment {
 			@Override
 			protected Tuple<List<TvStation>, List<ProgramTable>> doInBackground(
 					Void... params) {
-				List<TvStation> stationList = dataService.getAllTvStation();
+				List<TvStation> stationList = dataService
+						.getTvStationByClassify(classify);
 				Log.d(TAG, "station list: " + stationList.toString());
-				Log.d(TAG, "query program table of " + stationName + " at "
-						+ date);
+				Log.d(TAG, "query program table of " + classify + " at " + date);
 				List<ProgramTable> ptList = dataService.getProgramTable(
-						stationName, date);
+						stationList.get(0).getName(), date);
 				return new Tuple<List<TvStation>, List<ProgramTable>>(
 						stationList, ptList);
 			}
@@ -91,13 +98,40 @@ public class ProgramTableFragment extends Fragment {
 		TvStationAdapter tvApt = new TvStationAdapter(getActivity(),
 				stationList);
 		lvStation.setAdapter(tvApt);
+		lvStation.setOnItemClickListener(this);
 
 		ListView lvProgramTable = (ListView) view
 				.findViewById(R.id.fragment_program_table_programs);
-		ProgramTableAdapter ptApt = new ProgramTableAdapter(getActivity(),
-				ptList);
+		ptApt = new ProgramTableAdapter(getActivity(), ptList);
 		lvProgramTable.setAdapter(ptApt);
 		return view;
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		final TvStation station = (TvStation) parent
+				.getItemAtPosition(position);
+		AsyncTask<Void, Void, List<ProgramTable>> task = new AsyncTask<Void, Void, List<ProgramTable>>() {
+			@Override
+			protected List<ProgramTable> doInBackground(Void... params) {
+				return dataService.getProgramTable(station.getName(), date);
+			}
+		};
+		List<ProgramTable> ptList = null;
+		try {
+			ptList = task.execute().get();
+		} catch (Exception e) {
+			Toast.makeText(
+					getActivity(),
+					getResources().getText(
+							R.string.query_program_table_of_tv_station_error)
+							.toString(), Toast.LENGTH_SHORT).show();
+		}
+		ptApt.setNotifyOnChange(false);
+		ptApt.clear();
+		ptApt.setNotifyOnChange(true);
+		ptApt.addAll(ptList);
 	}
 
 	/**
@@ -150,7 +184,7 @@ public class ProgramTableFragment extends Fragment {
 			ViewHolder holder = null;
 			if (view == null) {
 				view = LayoutInflater.from(getContext()).inflate(
-						R.layout.tv_station_item, null);
+						R.layout.program_table_item, null);
 				holder = new ViewHolder();
 				holder.tvProgram = (TextView) view
 						.findViewById(R.id.program_table_item_tvProgram);
@@ -163,7 +197,11 @@ public class ProgramTableFragment extends Fragment {
 
 			ProgramTable pt = getItem(position);
 			holder.tvProgram.setText(pt.getProgram());
-			holder.tvAirTime.setText(pt.getAirTime());
+			String airTime = pt.getAirTime();
+			Matcher matcher = PATTERN_DATE.matcher(airTime);
+			if (matcher.matches()) {
+				holder.tvAirTime.setText(matcher.group(1));
+			}
 			return view;
 		}
 

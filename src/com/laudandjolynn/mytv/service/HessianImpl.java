@@ -57,6 +57,40 @@ public class HessianImpl implements DataService {
 	}
 
 	@Override
+	public List<TvStation> getTvStationByClassify(String classify) {
+		HessianProxyFactory proxy = new HessianProxyFactory();
+		JolynnTv tv;
+		try {
+			tv = (JolynnTv) proxy.create(JolynnTv.class, url);
+		} catch (MalformedURLException e) {
+			throw new MyTvException("invalid url: " + url, e);
+		}
+		String allTvStation = tv.getTvStationByClassify(classify);
+		JSONArray array;
+		try {
+			array = new JSONArray(allTvStation);
+		} catch (JSONException e) {
+			throw new MyTvException("invalid data of tv station.", e);
+		}
+		int length = array == null ? 0 : array.length();
+		if (length <= 0) {
+			throw new MyTvException("invalid data of tv station.");
+		}
+
+		List<TvStation> stations = new ArrayList<TvStation>(length);
+		for (int i = 0; i < length; i++) {
+			JSONObject json = array.optJSONObject(i);
+			TvStation station = new TvStation();
+			station.setCity(json.optString("city"));
+			station.setClassify(json.optString("classify"));
+			station.setId(json.optInt("id"));
+			station.setName(json.optString("name"));
+			stations.add(station);
+		}
+		return stations;
+	}
+
+	@Override
 	public List<TvStation> getAllTvStation() {
 		HessianProxyFactory proxy = new HessianProxyFactory();
 		JolynnTv tv;

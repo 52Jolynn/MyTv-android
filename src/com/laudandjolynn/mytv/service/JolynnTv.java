@@ -15,6 +15,8 @@
  ******************************************************************************/
 package com.laudandjolynn.mytv.service;
 
+import android.os.RemoteException;
+
 /**
  * @author: Laud
  * @email: htd0324@gmail.com
@@ -28,6 +30,15 @@ public interface JolynnTv {
 	 * @return
 	 */
 	public String getTvStationClassify();
+
+	/**
+	 * 根据电视台分类获取分类下的所有电视台
+	 * 
+	 * @param classify
+	 * @return
+	 * @throws RemoteException
+	 */
+	public String getTvStationByClassify(String classify);
 
 	/**
 	 * 获取所有电视台
