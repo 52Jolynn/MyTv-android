@@ -2,10 +2,14 @@
 
     <dimen name="pager_sliding_tab_strip_height">48dp</dimen>
     <dimen name="tv_station_item_station_name_margin">5dp</dimen>
-    <dimen name="tv_station_item_station_name_text_size">16sp</dimen>
-    <dimen name="programe_table_item_program_text_size">16sp</dimen>
-    <dimen name="programe_table_item_air_time_text_size">16sp</dimen>
+    <dimen name="tv_station_item_station_name_text_size">14sp</dimen>
+    <dimen name="tv_station_list_view_divider_height">2dp</dimen>
+    <dimen name="programe_table_item_program_text_size">14sp</dimen>
+    <dimen name="programe_table_item_air_time_text_size">14sp</dimen>
     <dimen name="program_table_item_content_margin">5dp</dimen>
-    <dimen name="program_table_item_program_table_margin_left">20dp</dimen>
+    <dimen name="program_table_list_view_padding_left">10dp</dimen>
+    <dimen name="program_table_item_program_table_margin_left">10dp</dimen>
+    <dimen name="program_table_list_view_divider_height">2dp</dimen>
+    
 
 </resources>

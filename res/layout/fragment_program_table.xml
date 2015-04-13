@@ -10,14 +10,23 @@
         android:id="@+id/fragment_program_table_tvlist"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="3" >
+        android:layout_weight="3"
+        android:cacheColorHint="#0000"
+        android:choiceMode="singleChoice"
+        android:dividerHeight="@dimen/tv_station_list_view_divider_height"
+        android:listSelector="@color/tv_station_list_view_list_selector" >
     </ListView>
 
     <ListView
         android:id="@+id/fragment_program_table_programs"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="7" >
+        android:layout_weight="7"
+        android:cacheColorHint="#0000"
+        android:choiceMode="none"
+        android:dividerHeight="@dimen/program_table_list_view_divider_height"
+        android:listSelector="@color/transparent"
+        android:paddingLeft="@dimen/program_table_list_view_padding_left" >
     </ListView>
 
 </LinearLayout>

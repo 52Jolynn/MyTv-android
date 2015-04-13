@@ -1,5 +1,6 @@
 package com.laudandjolynn.mytv;
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,6 +19,7 @@ import com.laudandjolynn.mytv.utils.DateUtils;
 
 public class MainActivity extends FragmentActivity {
 	private String date = DateUtils.today();
+	private ProgressDialog pbDialog = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,14 @@ public class MainActivity extends FragmentActivity {
 
 		String[] titles = new String[] { getResources().getText(
 				R.string.app_name).toString() };
+		pbDialog = new ProgressDialog(this);
+		pbDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		pbDialog.setCancelable(true);
+		pbDialog.setTitle(getResources().getText(
+				R.string.query_epg_data_progress_dialog_title).toString());
+		pbDialog.setMessage(getResources().getText(
+				R.string.query_epg_data_progress_dialog_content).toString());
+		pbDialog.show();
 		try {
 			titles = task.execute().get();
 		} catch (Exception e) {
@@ -42,6 +52,7 @@ public class MainActivity extends FragmentActivity {
 					R.string.query_tv_station_classify_error).toString();
 			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 		}
+		pbDialog.dismiss();
 		PagerSlidingTabStrip tabs = (PagerSlidingTabStrip) findViewById(R.id.nav_tabs);
 		ViewPager pager = (ViewPager) findViewById(R.id.pager);
 		MyPagerAdapter adapter = new MyPagerAdapter(titles,

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background_tab_pressed">#6633B5E5</color>
+
+    <color name="nav_tab_pressed">#6633B5E5</color>
+    <color name="nav_tab_indicator_color">#368AD1</color>
+    <color name="transparent">#0fff</color>
+    <color name="white">#fff</color>
+    <color name="tv_station_list_view_list_selector">#FF7F27</color>
+
 </resources>

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -42,7 +43,10 @@ public class ProgramTableFragment extends Fragment implements
 	private DataService dataService = new HessianImpl();
 	private final static Pattern PATTERN_DATE = Pattern
 			.compile("\\d+-\\d{2}-\\d{2}\\s+(\\d{2}:\\d{2}):\\d{2}");
+	private ListView lvStation = null;
+	private TvStationAdapter tvApt = null;
 	private ProgramTableAdapter ptApt = null;
+	private ProgressDialog pbDialog = null;
 
 	public static ProgramTableFragment newInstance(String classify, String date) {
 		ProgramTableFragment f = new ProgramTableFragment();
@@ -79,6 +83,14 @@ public class ProgramTableFragment extends Fragment implements
 			}
 		};
 		Tuple<List<TvStation>, List<ProgramTable>> result = null;
+		pbDialog = new ProgressDialog(getActivity());
+		pbDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		pbDialog.setCancelable(true);
+		pbDialog.setTitle(getResources().getText(
+				R.string.query_epg_data_progress_dialog_title).toString());
+		pbDialog.setMessage(getResources().getText(
+				R.string.query_epg_data_progress_dialog_content).toString());
+		pbDialog.show();
 		try {
 			result = task.execute().get();
 		} catch (Exception e) {
@@ -88,15 +100,15 @@ public class ProgramTableFragment extends Fragment implements
 							R.string.query_program_table_of_tv_station_error)
 							.toString(), Toast.LENGTH_SHORT).show();
 		}
+		pbDialog.dismiss();
 		List<TvStation> stationList = result.left;
 		List<ProgramTable> ptList = result.right;
 
 		// 获取页面元素
 		View view = inflater.inflate(R.layout.fragment_program_table, null);
-		ListView lvStation = (ListView) view
+		lvStation = (ListView) view
 				.findViewById(R.id.fragment_program_table_tvlist);
-		TvStationAdapter tvApt = new TvStationAdapter(getActivity(),
-				stationList);
+		tvApt = new TvStationAdapter(getActivity(), stationList);
 		lvStation.setAdapter(tvApt);
 		lvStation.setOnItemClickListener(this);
 
@@ -104,6 +116,7 @@ public class ProgramTableFragment extends Fragment implements
 				.findViewById(R.id.fragment_program_table_programs);
 		ptApt = new ProgramTableAdapter(getActivity(), ptList);
 		lvProgramTable.setAdapter(ptApt);
+		lvStation.setItemChecked(0, true);
 		return view;
 	}
 
@@ -120,6 +133,7 @@ public class ProgramTableFragment extends Fragment implements
 		};
 		List<ProgramTable> ptList = null;
 		try {
+			pbDialog.show();
 			ptList = task.execute().get();
 		} catch (Exception e) {
 			Toast.makeText(
@@ -128,10 +142,12 @@ public class ProgramTableFragment extends Fragment implements
 							R.string.query_program_table_of_tv_station_error)
 							.toString(), Toast.LENGTH_SHORT).show();
 		}
+		pbDialog.dismiss();
 		ptApt.setNotifyOnChange(false);
 		ptApt.clear();
 		ptApt.setNotifyOnChange(true);
 		ptApt.addAll(ptList);
+		tvApt.selectedItemPosition = position;
 	}
 
 	/**
@@ -141,6 +157,7 @@ public class ProgramTableFragment extends Fragment implements
 	 * 
 	 */
 	private final static class TvStationAdapter extends ArrayAdapter<TvStation> {
+		private int selectedItemPosition = -1;
 
 		public TvStationAdapter(Context context, List<TvStation> stationList) {
 			super(context, 0, stationList);
@@ -163,6 +180,11 @@ public class ProgramTableFragment extends Fragment implements
 
 			TvStation station = getItem(position);
 			holder.tvStationName.setText(station.getName());
+			if (selectedItemPosition == position) {
+				view.setBackgroundResource(R.color.tv_station_list_view_list_selector);
+			} else {
+				view.setBackgroundResource(R.color.transparent);
+			}
 			return view;
 		}
 
