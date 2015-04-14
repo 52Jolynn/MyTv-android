@@ -1,5 +1,6 @@
 package com.laudandjolynn.mytv;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +21,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.laudandjolynn.mytv.android.R;
 import com.laudandjolynn.mytv.model.ProgramTable;
@@ -64,6 +66,9 @@ public class ProgramTableFragment extends Fragment implements
 					&& fragment.pbDialog != null
 					&& fragment.pbDialog.isShowing()) {
 				fragment.pbDialog.dismiss();
+			} else if (AppUtils.EXCEPTION_CATCHED == msg.what) {
+				Toast.makeText(fragment.getActivity(), msg.obj.toString(),
+						Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
@@ -98,14 +103,27 @@ public class ProgramTableFragment extends Fragment implements
 			@Override
 			protected Tuple<List<TvStation>, List<ProgramTable>> doInBackground(
 					Void... params) {
-				List<TvStation> stationList = dataService
-						.getTvStationByClassify(classify);
-				Log.d(TAG, "station list: " + stationList.toString());
-				Log.d(TAG, "query program table of " + classify + " at " + date);
-				List<ProgramTable> ptList = dataService.getProgramTable(
-						stationList.get(0).getName(), date);
-				return new Tuple<List<TvStation>, List<ProgramTable>>(
-						stationList, ptList);
+				try {
+					List<TvStation> stationList = dataService
+							.getTvStationByClassify(classify);
+					Log.d(TAG, "station list: " + stationList.toString());
+					Log.d(TAG, "query program table of " + classify + " at "
+							+ date);
+					List<ProgramTable> ptList = dataService.getProgramTable(
+							stationList.get(0).getName(), date);
+					return new Tuple<List<TvStation>, List<ProgramTable>>(
+							stationList, ptList);
+				} catch (Exception e) {
+					handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+					Message msg = new Message();
+					msg.what = AppUtils.EXCEPTION_CATCHED;
+					msg.obj = getResources().getText(
+							R.string.query_epg_data_error).toString();
+					handler.sendMessage(msg);
+					return new Tuple<List<TvStation>, List<ProgramTable>>(
+							new ArrayList<TvStation>(0),
+							new ArrayList<ProgramTable>(0));
+				}
 			}
 
 			@Override
@@ -147,7 +165,17 @@ public class ProgramTableFragment extends Fragment implements
 		AsyncTask<Void, Void, List<ProgramTable>> task = new AsyncTask<Void, Void, List<ProgramTable>>() {
 			@Override
 			protected List<ProgramTable> doInBackground(Void... params) {
-				return dataService.getProgramTable(station.getName(), date);
+				try {
+					return dataService.getProgramTable(station.getName(), date);
+				} catch (Exception e) {
+					handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+					Message msg = new Message();
+					msg.what = AppUtils.EXCEPTION_CATCHED;
+					msg.obj = getResources().getText(
+							R.string.query_epg_data_error).toString();
+					handler.sendMessage(msg);
+					return new ArrayList<ProgramTable>(0);
+				}
 			}
 
 			@Override

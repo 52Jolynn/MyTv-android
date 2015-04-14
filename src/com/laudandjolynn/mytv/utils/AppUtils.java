@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import com.laudandjolynn.mytv.android.R;
 
 public class AppUtils {
+	public final static int EXCEPTION_CATCHED = -1;
 	public final static int SHOW_PROGRESS_DIALOG = 0;
 	public final static int DISMISS_PROGRESS_DIALOG = 1;
 

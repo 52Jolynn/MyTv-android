@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
+import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.laudandjolynn.mytv.android.R;
@@ -42,6 +43,9 @@ public class MainActivity extends FragmentActivity {
 						&& activity.pbDialog != null
 						&& activity.pbDialog.isShowing()) {
 					activity.pbDialog.dismiss();
+				} else if (AppUtils.EXCEPTION_CATCHED == msg.what) {
+					Toast.makeText(activity, msg.obj.toString(),
+							Toast.LENGTH_SHORT).show();
 				}
 			}
 		}
@@ -55,14 +59,25 @@ public class MainActivity extends FragmentActivity {
 			pbDialog = AppUtils.buildEpgProgressDialog(this);
 		}
 		pbDialog.show();
+		classify = new String[] { getResources().getText(R.string.app_name)
+				.toString() };
 		// 获取数据
 		AsyncTask<Void, Void, String[]> task = new AsyncTask<Void, Void, String[]>() {
 
 			@Override
 			protected String[] doInBackground(Void... params) {
 				DataService dataService = new HessianImpl();
-				String[] titles = dataService.getTvStationClassify();
-				return titles;
+				try {
+					return dataService.getTvStationClassify();
+				} catch (Exception e) {
+					handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
+					Message msg = new Message();
+					msg.what = AppUtils.EXCEPTION_CATCHED;
+					msg.obj = getResources().getText(
+							R.string.query_epg_data_error).toString();
+					handler.sendMessage(msg);
+					return classify;
+				}
 			}
 
 			@Override
@@ -73,8 +88,6 @@ public class MainActivity extends FragmentActivity {
 			}
 		};
 
-		classify = new String[] { getResources().getText(R.string.app_name)
-				.toString() };
 		task.execute();
 	}
 
