@@ -10,7 +10,7 @@ public class Config {
 	public final static NetConfig NET_CONFIG = new NetConfig();
 
 	public final static class NetConfig {
-		private String ip = "192.168.0.109";
+		private String ip = "tv.1eq1.com";
 		private int hessianPort = 33117;
 		private int rmiPort = 33118;
 
