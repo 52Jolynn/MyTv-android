@@ -220,8 +220,9 @@ public class ProgramTableFragment extends Fragment implements
 			}
 
 			TvStation station = getItem(position);
-			holder.tvChannel.setText(station.getChannel());
-			holder.tvStationName.setText(station.getName());
+			String channel = station.getChannel();
+			holder.tvChannel.setText(channel == null ? "" : channel);
+			holder.tvStationName.setText(station.getDisplayName());
 			if (selectedItemPosition == position) {
 				view.setBackgroundResource(R.color.tv_station_list_view_list_selector);
 			} else {

@@ -8,8 +8,8 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
-        android:layout_marginLeft="@dimen/tv_station_item_station_name_margin"
-        android:layout_marginTop="@dimen/tv_station_item_station_name_margin"
+        android:layout_marginLeft="@dimen/tv_station_item_margin"
+        android:layout_marginTop="@dimen/tv_station_item_margin"
         android:gravity="center_vertical|left"
         android:textSize="@dimen/tv_station_item_text_size" />
 
@@ -17,7 +17,8 @@
         android:id="@+id/tv_station_item_tvStationName"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/tv_station_item_station_name_margin"
+        android:layout_marginLeft="@dimen/tv_station_item_margin"
+        android:layout_marginTop="@dimen/tv_station_item_margin"
         android:layout_toRightOf="@id/tv_station_item_tvChannel"
         android:gravity="center_vertical|left"
         android:textSize="@dimen/tv_station_item_text_size" />

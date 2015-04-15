@@ -9,6 +9,7 @@ package com.laudandjolynn.mytv.model;
 public class TvStation {
 	private int id;
 	private String name;
+	private String displayName;
 	private String city;
 	private String classify;
 	private String channel;
@@ -45,6 +46,14 @@ public class TvStation {
 		this.classify = classify;
 	}
 
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 	public String getChannel() {
 		return channel;
 	}
@@ -55,8 +64,9 @@ public class TvStation {
 
 	@Override
 	public String toString() {
-		return "TvStation [id=" + id + ", name=" + name + ", city=" + city
-				+ ", classify=" + classify + ", channel=" + channel + "]";
+		return "TvStation [id=" + id + ", name=" + name + ", displayName="
+				+ displayName + ", city=" + city + ", classify=" + classify
+				+ ", channel=" + channel + "]";
 	}
 
 }

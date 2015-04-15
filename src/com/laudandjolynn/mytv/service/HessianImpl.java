@@ -81,11 +81,13 @@ public class HessianImpl implements DataService {
 		for (int i = 0; i < length; i++) {
 			JSONObject json = array.optJSONObject(i);
 			TvStation station = new TvStation();
+			station.setChannel(json.optString("channel", ""));
 			station.setCity(json.optString("city"));
 			station.setClassify(json.optString("classify"));
 			station.setId(json.optInt("id"));
-			station.setName(json.optString("name"));
-			station.setChannel(json.optString("channel", ""));
+			String stationName = json.optString("name");
+			station.setName(stationName);
+			station.setDisplayName(json.optString("displayName", stationName));
 			stations.add(station);
 		}
 		return stations;
@@ -119,7 +121,9 @@ public class HessianImpl implements DataService {
 			station.setCity(json.optString("city"));
 			station.setClassify(json.optString("classify"));
 			station.setId(json.optInt("id"));
-			station.setName(json.optString("name"));
+			String stationName = json.optString("name");
+			station.setName(stationName);
+			station.setDisplayName(json.optString("displayName", stationName));
 			stations.add(station);
 		}
 		return stations;
