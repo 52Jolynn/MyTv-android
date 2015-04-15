@@ -50,11 +50,14 @@ public interface JolynnTv {
 	/**
 	 * 获取指定电视台、日期的节目表
 	 * 
-	 * @param name
+	 * @param displayName
 	 *            电视台名称
+	 * @param classify
+	 *            电视台分类
 	 * @param date
 	 *            日期, yyyy-MM-dd
 	 * @return
 	 */
-	public String getProgramTable(String name, String date);
+	public String getProgramTable(String displayName, String classify,
+			String date);
 }

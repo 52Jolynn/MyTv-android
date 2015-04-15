@@ -130,7 +130,8 @@ public class HessianImpl implements DataService {
 	}
 
 	@Override
-	public List<ProgramTable> getProgramTable(String name, String date) {
+	public List<ProgramTable> getProgramTable(String displayName,
+			String classify, String date) {
 		HessianProxyFactory proxy = new HessianProxyFactory();
 		JolynnTv tv;
 		try {
@@ -138,18 +139,18 @@ public class HessianImpl implements DataService {
 		} catch (MalformedURLException e) {
 			throw new MyTvException("invalid url: " + url, e);
 		}
-		String programTable = tv.getProgramTable(name, date);
+		String programTable = tv.getProgramTable(displayName, classify, date);
 		JSONArray array;
 		try {
 			array = new JSONArray(programTable);
 		} catch (JSONException e) {
-			throw new MyTvException("invalid program table data of " + name
-					+ " at " + date, e);
+			throw new MyTvException("invalid program table data of "
+					+ displayName + " at " + date, e);
 		}
 		int length = array == null ? 0 : array.length();
 		if (length <= 0) {
-			throw new MyTvException("invalid program table data of " + name
-					+ " at " + date);
+			throw new MyTvException("invalid program table data of "
+					+ displayName + " at " + date);
 		}
 
 		List<ProgramTable> ptList = new ArrayList<ProgramTable>(length);

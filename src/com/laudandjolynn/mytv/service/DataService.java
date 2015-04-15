@@ -40,11 +40,14 @@ public interface DataService {
 	/**
 	 * 获取指定电视台、日期的节目表
 	 * 
-	 * @param name
+	 * @param displayName
 	 *            电视台名称
+	 * @param classify
+	 *            电视台分类
 	 * @param date
 	 *            日期, yyyy-MM-dd
 	 * @return
 	 */
-	public List<ProgramTable> getProgramTable(String name, String date);
+	public List<ProgramTable> getProgramTable(String displayName,
+			String classify, String date);
 }

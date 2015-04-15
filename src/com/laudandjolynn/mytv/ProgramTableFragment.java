@@ -102,14 +102,15 @@ public class ProgramTableFragment extends Fragment implements
 			@Override
 			protected Tuple<List<TvStation>, List<ProgramTable>> doInBackground(
 					Void... params) {
+				List<TvStation> stationList = null;
+				List<ProgramTable> ptList = null;
 				try {
-					List<TvStation> stationList = dataService
-							.getTvStationByClassify(classify);
+					stationList = dataService.getTvStationByClassify(classify);
 					Log.d(TAG, "station list: " + stationList.toString());
 					Log.d(TAG, "query program table of " + classify + " at "
 							+ date);
-					List<ProgramTable> ptList = dataService.getProgramTable(
-							stationList.get(0).getName(), date);
+					ptList = dataService.getProgramTable(stationList.get(0)
+							.getName(), classify, date);
 					return new Tuple<List<TvStation>, List<ProgramTable>>(
 							stationList, ptList);
 				} catch (Exception e) {
@@ -120,8 +121,10 @@ public class ProgramTableFragment extends Fragment implements
 							R.string.query_epg_data_error).toString();
 					handler.sendMessage(msg);
 					return new Tuple<List<TvStation>, List<ProgramTable>>(
-							new ArrayList<TvStation>(0),
-							new ArrayList<ProgramTable>(0));
+							stationList == null ? new ArrayList<TvStation>(0)
+									: stationList,
+							ptList == null ? new ArrayList<ProgramTable>(0)
+									: ptList);
 				}
 			}
 
@@ -165,7 +168,8 @@ public class ProgramTableFragment extends Fragment implements
 			@Override
 			protected List<ProgramTable> doInBackground(Void... params) {
 				try {
-					return dataService.getProgramTable(station.getName(), date);
+					return dataService.getProgramTable(station.getName(),
+							classify, date);
 				} catch (Exception e) {
 					handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
 					Message msg = new Message();
