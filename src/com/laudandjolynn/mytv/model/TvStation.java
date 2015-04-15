@@ -11,6 +11,7 @@ public class TvStation {
 	private String name;
 	private String city;
 	private String classify;
+	private String channel;
 
 	public int getId() {
 		return id;
@@ -44,9 +45,18 @@ public class TvStation {
 		this.classify = classify;
 	}
 
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
 	@Override
 	public String toString() {
 		return "TvStation [id=" + id + ", name=" + name + ", city=" + city
-				+ ", classify=" + classify + "]";
+				+ ", classify=" + classify + ", channel=" + channel + "]";
 	}
+
 }

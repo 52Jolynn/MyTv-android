@@ -40,13 +40,11 @@ import com.laudandjolynn.mytv.utils.Tuple;
 public class ProgramTableFragment extends Fragment implements
 		OnItemClickListener {
 	private final static String TAG = ProgramTable.class.getName();
-	private static final String ARG_CLASSIFY = "classify";
-	private static final String ARG_AIR_DATE = "airDate";
 	private String classify;
 	private String date;
 	private DataService dataService = new HessianImpl();
 	private final static Pattern PATTERN_DATE = Pattern
-			.compile("\\d+-\\d{2}-\\d{2}\\s+(\\d{2}:\\d{2}):\\d{2}");
+			.compile("\\d+-\\d{2}-\\d{2}\\s+(\\d{2}:\\d{2}):\\d{2}(?:\\.\\d+)?");
 	private ListView lvStation = null;
 	private TvStationAdapter tvApt = null;
 	private ProgramTableAdapter ptApt = null;
@@ -73,20 +71,18 @@ public class ProgramTableFragment extends Fragment implements
 		}
 	}
 
-	public static ProgramTableFragment newInstance(String classify, String date) {
-		ProgramTableFragment f = new ProgramTableFragment();
-		Bundle b = new Bundle();
-		b.putString(ARG_CLASSIFY, classify);
-		b.putString(ARG_AIR_DATE, date);
-		f.setArguments(b);
-		return f;
+	public static ProgramTableFragment newInstance() {
+		return new ProgramTableFragment();
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this.classify = getArguments().getString(ARG_CLASSIFY);
-		this.date = getArguments().getString(ARG_AIR_DATE);
+	}
+
+	public void setArguments(String classify, String date) {
+		this.classify = classify;
+		this.date = date;
 	}
 
 	@Override
@@ -94,6 +90,9 @@ public class ProgramTableFragment extends Fragment implements
 			Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.fragment_program_table,
 				null);
+		if (classify == null || date == null) {
+			return view;
+		}
 		if (pbDialog == null) {
 			pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
 		}
@@ -211,6 +210,8 @@ public class ProgramTableFragment extends Fragment implements
 				view = LayoutInflater.from(getContext()).inflate(
 						R.layout.tv_station_item, null);
 				holder = new ViewHolder();
+				holder.tvChannel = (TextView) view
+						.findViewById(R.id.tv_station_item_tvChannel);
 				holder.tvStationName = (TextView) view
 						.findViewById(R.id.tv_station_item_tvStationName);
 				view.setTag(holder);
@@ -219,6 +220,7 @@ public class ProgramTableFragment extends Fragment implements
 			}
 
 			TvStation station = getItem(position);
+			holder.tvChannel.setText(station.getChannel());
 			holder.tvStationName.setText(station.getName());
 			if (selectedItemPosition == position) {
 				view.setBackgroundResource(R.color.tv_station_list_view_list_selector);
@@ -229,6 +231,7 @@ public class ProgramTableFragment extends Fragment implements
 		}
 
 		private final static class ViewHolder {
+			private TextView tvChannel;
 			private TextView tvStationName;
 		}
 	}

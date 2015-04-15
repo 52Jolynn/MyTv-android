@@ -10,9 +10,8 @@ public class Config {
 	public final static NetConfig NET_CONFIG = new NetConfig();
 
 	public final static class NetConfig {
-		private String ip = "tv.1eq1.com";
-		private int hessianPort = 33117;
-		private int rmiPort = 33118;
+		private String ip = "120.24.65.248";
+		private int port = 33117;
 
 		public String getIp() {
 			return ip;
@@ -22,20 +21,12 @@ public class Config {
 			this.ip = ip;
 		}
 
-		public int getHessianPort() {
-			return hessianPort;
+		public int getPort() {
+			return port;
 		}
 
-		public void setHessianPort(int hessianPort) {
-			this.hessianPort = hessianPort;
-		}
-
-		public int getRmiPort() {
-			return rmiPort;
-		}
-
-		public void setRmiPort(int rmiPort) {
-			this.rmiPort = rmiPort;
+		public void setPort(int port) {
+			this.port = port;
 		}
 
 	}

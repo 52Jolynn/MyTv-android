@@ -22,7 +22,7 @@ import com.laudandjolynn.mytv.model.TvStation;
  */
 public class HessianImpl implements DataService {
 	private final static String url = "http://" + Config.NET_CONFIG.getIp()
-			+ ":" + Config.NET_CONFIG.getHessianPort() + "/epg";
+			+ ":" + Config.NET_CONFIG.getPort() + "/epg";
 
 	@Override
 	public String[] getTvStationClassify() {
@@ -85,6 +85,7 @@ public class HessianImpl implements DataService {
 			station.setClassify(json.optString("classify"));
 			station.setId(json.optInt("id"));
 			station.setName(json.optString("name"));
+			station.setChannel(json.optString("channel", ""));
 			stations.add(station);
 		}
 		return stations;

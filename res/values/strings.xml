@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">我的电视台</string>
+    <string name="app_name">紫林TV</string>
     <string name="query_tv_station_classify_error">无法获取电视台分类信息</string>
     <string name="query_program_table_of_tv_station_error">无法获取电视台节目信息</string>
     <string name="query_epg_data_progress_dialog_title">信息</string>
-    <string name="query_epg_data_progress_dialog_content">正在努力加载...</string>
+    <string name="query_epg_data_progress_dialog_content">正在努力加载&#8901;&#8901;&#8901;</string>
     <string name="query_epg_data_error">查询数据失败</string>
+    <string name="today">今天</string>
+    <string name="tomorrow">明天</string>
+    <string name="refresh">刷新</string>
 
 </resources>
