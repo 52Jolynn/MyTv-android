@@ -216,4 +216,16 @@ public class DateUtils {
 				lastDay, 0, 0, 0);
 		return calendar.getTime();
 	}
+
+	/**
+	 * 获取指定日期是星期几
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static int getWeek(Date date) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(Calendar.DAY_OF_WEEK);
+	}
 }

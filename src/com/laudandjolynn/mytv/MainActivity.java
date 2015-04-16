@@ -2,6 +2,7 @@ package com.laudandjolynn.mytv;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 
 import android.app.ProgressDialog;
@@ -17,8 +18,8 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -67,7 +68,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		APP_NAME = getResources().getText(R.string.app_name).toString();
-		setTitle();
+		setTitle(DateUtils.string2Date(date, "yyyy-MM-dd"));
 
 		Button btnRefresh = (Button) findViewById(R.id.main_activity_btnRefresh);
 		Button btnToday = (Button) findViewById(R.id.main_activity_btnToday);
@@ -139,8 +140,8 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		case R.id.main_activity_btnToday:
 			String today = DateUtils.today();
 			if (!today.equals(date)) {
-				date = DateUtils.today();
-				setTitle();
+				date = today;
+				setTitle(DateUtils.string2Date(today, "yyyy-MM-dd"));
 				pagerApt.notifyDataSetChanged();
 			}
 			break;
@@ -148,7 +149,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			Date tomorrow = DateUtils.addDay(
 					DateUtils.string2Date(date, "yyyy-MM-dd"), 1);
 			date = DateUtils.date2String(tomorrow, "yyyy-MM-dd");
-			setTitle();
+			setTitle(tomorrow);
 			pagerApt.notifyDataSetChanged();
 			break;
 		default:
@@ -156,8 +157,30 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		}
 	}
 
-	private void setTitle() {
-		setTitle(APP_NAME + " (" + date + ")");
+	private void setTitle(Date date) {
+		int week = DateUtils.getWeek(date);
+		setTitle(APP_NAME + " @" + this.date + " " + week2String(week));
+	}
+
+	private String week2String(int week) {
+		switch (week) {
+		case Calendar.SUNDAY:
+			return getResources().getText(R.string.sunday).toString();
+		case Calendar.MONDAY:
+			return getResources().getText(R.string.monday).toString();
+		case Calendar.TUESDAY:
+			return getResources().getText(R.string.tuesday).toString();
+		case Calendar.WEDNESDAY:
+			return getResources().getText(R.string.wednesday).toString();
+		case Calendar.THURSDAY:
+			return getResources().getText(R.string.thursday).toString();
+		case Calendar.FRIDAY:
+			return getResources().getText(R.string.friday).toString();
+		case Calendar.SATURDAY:
+			return getResources().getText(R.string.saturday).toString();
+		default:
+			return "";
+		}
 	}
 
 	public class MyPagerAdapter extends FragmentPagerAdapter {
