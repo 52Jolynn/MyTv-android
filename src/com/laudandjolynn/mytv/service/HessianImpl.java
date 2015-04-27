@@ -11,8 +11,8 @@ import org.json.JSONObject;
 import com.caucho.hessian.client.HessianProxyFactory;
 import com.laudandjolynn.mytv.Config;
 import com.laudandjolynn.mytv.exception.MyTvException;
+import com.laudandjolynn.mytv.model.MyTv;
 import com.laudandjolynn.mytv.model.ProgramTable;
-import com.laudandjolynn.mytv.model.TvStation;
 
 /**
  * @author: Laud
@@ -25,7 +25,7 @@ public class HessianImpl implements DataService {
 			+ ":" + Config.NET_CONFIG.getPort() + "/epg";
 
 	@Override
-	public String[] getTvStationClassify() {
+	public String[] getMyTvClassify() {
 		HessianProxyFactory proxy = new HessianProxyFactory();
 		JolynnTv tv;
 		try {
@@ -33,7 +33,7 @@ public class HessianImpl implements DataService {
 		} catch (MalformedURLException e) {
 			throw new MyTvException("invalid url: " + url, e);
 		}
-		String classify = tv.getTvStationClassify();
+		String classify = tv.getMyTvClassify();
 		JSONArray array;
 		try {
 			array = new JSONArray(classify);
@@ -57,7 +57,7 @@ public class HessianImpl implements DataService {
 	}
 
 	@Override
-	public List<TvStation> getTvStationByClassify(String classify) {
+	public List<MyTv> getMyTvByClassify(String classify) {
 		HessianProxyFactory proxy = new HessianProxyFactory();
 		JolynnTv tv;
 		try {
@@ -65,7 +65,7 @@ public class HessianImpl implements DataService {
 		} catch (MalformedURLException e) {
 			throw new MyTvException("invalid url: " + url, e);
 		}
-		String allTvStation = tv.getTvStationByClassify(classify);
+		String allTvStation = tv.getMyTvByClassify(classify);
 		JSONArray array;
 		try {
 			array = new JSONArray(allTvStation);
@@ -77,54 +77,16 @@ public class HessianImpl implements DataService {
 			throw new MyTvException("invalid data of tv station.");
 		}
 
-		List<TvStation> stations = new ArrayList<TvStation>(length);
+		List<MyTv> stations = new ArrayList<MyTv>(length);
 		for (int i = 0; i < length; i++) {
 			JSONObject json = array.optJSONObject(i);
-			TvStation station = new TvStation();
-			station.setChannel(json.optString("channel", ""));
-			station.setCity(json.optString("city"));
-			station.setClassify(json.optString("classify"));
-			station.setId(json.optInt("id"));
-			String stationName = json.optString("name");
-			station.setName(stationName);
-			station.setDisplayName(json.optString("displayName", stationName));
-			stations.add(station);
-		}
-		return stations;
-	}
-
-	@Override
-	public List<TvStation> getAllTvStation() {
-		HessianProxyFactory proxy = new HessianProxyFactory();
-		JolynnTv tv;
-		try {
-			tv = (JolynnTv) proxy.create(JolynnTv.class, url);
-		} catch (MalformedURLException e) {
-			throw new MyTvException("invalid url: " + url, e);
-		}
-		String allTvStation = tv.getAllTvStation();
-		JSONArray array;
-		try {
-			array = new JSONArray(allTvStation);
-		} catch (JSONException e) {
-			throw new MyTvException("invalid data of tv station.", e);
-		}
-		int length = array == null ? 0 : array.length();
-		if (length <= 0) {
-			throw new MyTvException("invalid data of tv station.");
-		}
-
-		List<TvStation> stations = new ArrayList<TvStation>(length);
-		for (int i = 0; i < length; i++) {
-			JSONObject json = array.optJSONObject(i);
-			TvStation station = new TvStation();
-			station.setCity(json.optString("city"));
-			station.setClassify(json.optString("classify"));
-			station.setId(json.optInt("id"));
-			String stationName = json.optString("name");
-			station.setName(stationName);
-			station.setDisplayName(json.optString("displayName", stationName));
-			stations.add(station);
+			MyTv myTv = new MyTv();
+			myTv.setChannel(json.optString("channel", ""));
+			myTv.setClassify(json.optString("classify"));
+			myTv.setId(json.optInt("id"));
+			myTv.setStationName(json.optString("name"));
+			myTv.setDisplayName(json.optString("displayName"));
+			stations.add(myTv);
 		}
 		return stations;
 	}
@@ -161,7 +123,6 @@ public class HessianImpl implements DataService {
 			e.setAirTime(json.optString("airTime"));
 			e.setId(json.optLong("id"));
 			e.setProgram(json.optString("program"));
-			e.setStation(json.optInt("station"));
 			e.setStationName(json.optString("stationName"));
 			e.setWeek(json.optInt("week"));
 			ptList.add(e);

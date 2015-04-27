@@ -4,8 +4,8 @@ import java.util.List;
 
 import android.os.RemoteException;
 
+import com.laudandjolynn.mytv.model.MyTv;
 import com.laudandjolynn.mytv.model.ProgramTable;
-import com.laudandjolynn.mytv.model.TvStation;
 
 /**
  * @author: Laud
@@ -19,7 +19,7 @@ public interface DataService {
 	 * 
 	 * @return
 	 */
-	public String[] getTvStationClassify();
+	public String[] getMyTvClassify();
 
 	/**
 	 * 根据电视台分类获取分类下的所有电视台
@@ -28,14 +28,7 @@ public interface DataService {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public List<TvStation> getTvStationByClassify(String classify);
-
-	/**
-	 * 获取所有电视台
-	 * 
-	 * @return
-	 */
-	public List<TvStation> getAllTvStation();
+	public List<MyTv> getMyTvByClassify(String classify);
 
 	/**
 	 * 获取指定电视台、日期的节目表

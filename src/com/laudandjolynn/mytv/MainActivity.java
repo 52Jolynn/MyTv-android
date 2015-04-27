@@ -104,7 +104,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			protected String[] doInBackground(Void... params) {
 				DataService dataService = new HessianImpl();
 				try {
-					return dataService.getTvStationClassify();
+					return dataService.getMyTvClassify();
 				} catch (Exception e) {
 					handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
 					Message msg = new Message();

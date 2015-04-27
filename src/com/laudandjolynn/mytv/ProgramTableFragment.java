@@ -24,8 +24,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.laudandjolynn.mytv.android.R;
+import com.laudandjolynn.mytv.model.MyTv;
 import com.laudandjolynn.mytv.model.ProgramTable;
-import com.laudandjolynn.mytv.model.TvStation;
 import com.laudandjolynn.mytv.service.DataService;
 import com.laudandjolynn.mytv.service.HessianImpl;
 import com.laudandjolynn.mytv.utils.AppUtils;
@@ -98,21 +98,21 @@ public class ProgramTableFragment extends Fragment implements
 		}
 		pbDialog.show();
 		// 获取电视台及节目数据
-		AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>> task = new AsyncTask<Void, Void, Tuple<List<TvStation>, List<ProgramTable>>>() {
+		AsyncTask<Void, Void, Tuple<List<MyTv>, List<ProgramTable>>> task = new AsyncTask<Void, Void, Tuple<List<MyTv>, List<ProgramTable>>>() {
 			@Override
-			protected Tuple<List<TvStation>, List<ProgramTable>> doInBackground(
+			protected Tuple<List<MyTv>, List<ProgramTable>> doInBackground(
 					Void... params) {
-				List<TvStation> stationList = null;
+				List<MyTv> myTvList = null;
 				List<ProgramTable> ptList = null;
 				try {
-					stationList = dataService.getTvStationByClassify(classify);
-					Log.d(TAG, "station list: " + stationList.toString());
+					myTvList = dataService.getMyTvByClassify(classify);
+					Log.d(TAG, "station list: " + myTvList.toString());
 					Log.d(TAG, "query program table of " + classify + " at "
 							+ date);
-					ptList = dataService.getProgramTable(stationList.get(0)
-							.getName(), classify, date);
-					return new Tuple<List<TvStation>, List<ProgramTable>>(
-							stationList, ptList);
+					ptList = dataService.getProgramTable(myTvList.get(0)
+							.getStationName(), classify, date);
+					return new Tuple<List<MyTv>, List<ProgramTable>>(myTvList,
+							ptList);
 				} catch (Exception e) {
 					handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
 					Message msg = new Message();
@@ -120,9 +120,9 @@ public class ProgramTableFragment extends Fragment implements
 					msg.obj = getResources().getText(
 							R.string.query_epg_data_error).toString();
 					handler.sendMessage(msg);
-					return new Tuple<List<TvStation>, List<ProgramTable>>(
-							stationList == null ? new ArrayList<TvStation>(0)
-									: stationList,
+					return new Tuple<List<MyTv>, List<ProgramTable>>(
+							myTvList == null ? new ArrayList<MyTv>(0)
+									: myTvList,
 							ptList == null ? new ArrayList<ProgramTable>(0)
 									: ptList);
 				}
@@ -130,9 +130,9 @@ public class ProgramTableFragment extends Fragment implements
 
 			@Override
 			protected void onPostExecute(
-					Tuple<List<TvStation>, List<ProgramTable>> result) {
+					Tuple<List<MyTv>, List<ProgramTable>> result) {
 				handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
-				List<TvStation> stationList = result.left;
+				List<MyTv> stationList = result.left;
 				List<ProgramTable> ptList = result.right;
 
 				// 获取页面元素
@@ -158,8 +158,7 @@ public class ProgramTableFragment extends Fragment implements
 			long id) {
 		tvApt.selectedItemPosition = position;
 		tvApt.notifyDataSetChanged();
-		final TvStation station = (TvStation) parent
-				.getItemAtPosition(position);
+		final MyTv myTv = (MyTv) parent.getItemAtPosition(position);
 		if (pbDialog == null) {
 			pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
 		}
@@ -168,7 +167,7 @@ public class ProgramTableFragment extends Fragment implements
 			@Override
 			protected List<ProgramTable> doInBackground(Void... params) {
 				try {
-					return dataService.getProgramTable(station.getName(),
+					return dataService.getProgramTable(myTv.getStationName(),
 							classify, date);
 				} catch (Exception e) {
 					handler.sendEmptyMessage(AppUtils.DISMISS_PROGRESS_DIALOG);
@@ -199,10 +198,10 @@ public class ProgramTableFragment extends Fragment implements
 	 * @author tdhuang
 	 * 
 	 */
-	private final static class TvStationAdapter extends ArrayAdapter<TvStation> {
+	private final static class TvStationAdapter extends ArrayAdapter<MyTv> {
 		private int selectedItemPosition = -1;
 
-		public TvStationAdapter(Context context, List<TvStation> stationList) {
+		public TvStationAdapter(Context context, List<MyTv> stationList) {
 			super(context, 0, stationList);
 		}
 
@@ -223,10 +222,10 @@ public class ProgramTableFragment extends Fragment implements
 				holder = (ViewHolder) view.getTag();
 			}
 
-			TvStation station = getItem(position);
-			String channel = station.getChannel();
+			MyTv myTv = getItem(position);
+			String channel = myTv.getChannel();
 			holder.tvChannel.setText(channel == null ? "" : channel);
-			holder.tvStationName.setText(station.getDisplayName());
+			holder.tvStationName.setText(myTv.getDisplayName());
 			if (selectedItemPosition == position) {
 				view.setBackgroundResource(R.color.tv_station_list_view_list_selector);
 			} else {
