@@ -84,7 +84,7 @@ public class HessianImpl implements DataService {
 			myTv.setChannel(json.optString("channel", ""));
 			myTv.setClassify(json.optString("classify"));
 			myTv.setId(json.optInt("id"));
-			myTv.setStationName(json.optString("name"));
+			myTv.setStationName(json.optString("stationName"));
 			myTv.setDisplayName(json.optString("displayName"));
 			stations.add(myTv);
 		}
