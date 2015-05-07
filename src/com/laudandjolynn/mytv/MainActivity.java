@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,6 +40,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	private MyPagerAdapter pagerApt = null;
 	private PagerSlidingTabStrip pagerSlidingTabs = null;
 	private String APP_NAME = null;
+	private AsyncTask<Void, Void, String[]> currentTask = null;
 
 	private final static class MyHandler extends Handler {
 		private WeakReference<MainActivity> ctx = null;
@@ -94,11 +96,20 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	private void refresh() {
 		if (pbDialog == null) {
 			pbDialog = AppUtils.buildEpgProgressDialog(this);
+			pbDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					if (currentTask != null) {
+						currentTask.cancel(true);
+					}
+				}
+			});
 		}
 		pbDialog.show();
 
 		// 获取数据
-		AsyncTask<Void, Void, String[]> task = new AsyncTask<Void, Void, String[]>() {
+		currentTask = new AsyncTask<Void, Void, String[]>() {
 
 			@Override
 			protected String[] doInBackground(Void... params) {
@@ -127,7 +138,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 			}
 		};
 
-		task.execute();
+		currentTask.execute();
 	}
 
 	@Override

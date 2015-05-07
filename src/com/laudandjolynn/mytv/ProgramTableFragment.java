@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,6 +51,8 @@ public class ProgramTableFragment extends Fragment implements
 	private ProgramTableAdapter ptApt = null;
 	private ProgressDialog pbDialog = null;
 	private Handler handler = new MyHandler(this);
+	private AsyncTask<Void, Void, Tuple<List<MyTv>, List<ProgramTable>>> currentPageTask = null;
+	private AsyncTask<Void, Void, List<ProgramTable>> currentQueryTask = null;
 
 	private final static class MyHandler extends Handler {
 		private ProgramTableFragment fragment = null;
@@ -95,10 +98,19 @@ public class ProgramTableFragment extends Fragment implements
 		}
 		if (pbDialog == null) {
 			pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+			pbDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					if (currentPageTask != null) {
+						currentPageTask.cancel(true);
+					}
+				}
+			});
 		}
 		pbDialog.show();
 		// 获取电视台及节目数据
-		AsyncTask<Void, Void, Tuple<List<MyTv>, List<ProgramTable>>> task = new AsyncTask<Void, Void, Tuple<List<MyTv>, List<ProgramTable>>>() {
+		currentPageTask = new AsyncTask<Void, Void, Tuple<List<MyTv>, List<ProgramTable>>>() {
 			@Override
 			protected Tuple<List<MyTv>, List<ProgramTable>> doInBackground(
 					Void... params) {
@@ -149,7 +161,7 @@ public class ProgramTableFragment extends Fragment implements
 				lvProgramTable.setAdapter(ptApt);
 			}
 		};
-		task.execute();
+		currentPageTask.execute();
 		return view;
 	}
 
@@ -161,9 +173,18 @@ public class ProgramTableFragment extends Fragment implements
 		final MyTv myTv = (MyTv) parent.getItemAtPosition(position);
 		if (pbDialog == null) {
 			pbDialog = AppUtils.buildEpgProgressDialog(getActivity());
+			pbDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					if (currentQueryTask != null) {
+						currentQueryTask.cancel(true);
+					}
+				}
+			});
 		}
 		pbDialog.show();
-		AsyncTask<Void, Void, List<ProgramTable>> task = new AsyncTask<Void, Void, List<ProgramTable>>() {
+		currentQueryTask = new AsyncTask<Void, Void, List<ProgramTable>>() {
 			@Override
 			protected List<ProgramTable> doInBackground(Void... params) {
 				try {
@@ -189,7 +210,7 @@ public class ProgramTableFragment extends Fragment implements
 				ptApt.addAll(result);
 			}
 		};
-		task.execute();
+		currentQueryTask.execute();
 	}
 
 	/**
