@@ -10,7 +10,7 @@ public class Config {
 	public final static NetConfig NET_CONFIG = new NetConfig();
 
 	public final static class NetConfig {
-		private String ip = "120.24.65.248";
+		private String ip = "tv.1eq1.com";
 		private int port = 33117;
 
 		public String getIp() {
